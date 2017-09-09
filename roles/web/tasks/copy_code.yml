@@ -7,3 +7,6 @@
 
 - name: Creates the index.php file
   template: src=index.php.j2 dest=/var/www/html/index.php
+  
+- name: Delete index.html if exists
+  file: path=/var/www/html/index.html state=absent
