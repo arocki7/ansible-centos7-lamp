@@ -13,10 +13,7 @@
   yum: name=MySQL-python state=present
 
 - name: Start & Enable MySQL Server to start on boot
-  service:
-    name: mysqld
-    state: started
-    enabled: yes
+  service: name=mysqld state=started enabled=yes
 
 - shell: grep 'temporary password' /var/log/mysqld.log | awk '{print $NF}';
   register: result

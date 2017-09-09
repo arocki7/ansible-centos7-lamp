@@ -2,17 +2,10 @@
 # This playbook is to perform common tasks.
 
 - name: Enable Firewall on all the hosts
-  service:
-    name: firewalld
-    state: started
-    enabled: yes
+  service: name=firewalld state=started enabled=yes
     
 - name: Enable the firewall port for SSH
-  firewalld:
-    port: 22/tcp
-    permanent: true
-    state: enabled
-    immediate: yes
+  firewalld: port=22/tcp permanent=true state=enabled immediate=yes
     
 - name: Disallow password authentication
   lineinfile: dest=/etc/ssh/sshd_config
