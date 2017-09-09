@@ -25,7 +25,7 @@
 
 - stat: path=/root/.my.cnf
   register: sym
-- set_fact: mysql_root_pw="MySQL@007"
+- set_fact: mysql_root_pw="{{ masterpassword }}"
   when: sym.stat.exists == True
 
 - name: install .my.cnf with credentials
@@ -34,10 +34,10 @@
   tags: my_cnf
 
 - name: Set the root password for MySQL Database
-  command:  mysql -u root --connect-expired-password --execute="SET PASSWORD = PASSWORD('MySQL@007');"
+  command:  mysql -u root --connect-expired-password --execute="SET PASSWORD = PASSWORD('{{ masterpassword }}');"
     
 -  set_fact:
-    mysql_root_pw: "MySQL@007"
+    mysql_root_pw: "{{ masterpassword }}"
 
 - name: install .my.cnf with credentials
   template: src=my.cnf.j2 dest=/root/.my.cnf
@@ -45,21 +45,10 @@
   tags: my_cnf
 
 - name: Create the database for website
-  mysql_db:
-    name: ANSAP01
-    state: present
+  mysql_db: name={{ dbname }} state=present
 
 - name: Create the Application user for the database
-  mysql_user:
-    name: webapp
-    password: Bond@007
-    priv: '*.*:ALL'
-    host: '%'
-    state: present
+  mysql_user: name={{ dbuser }} password={{ upassword }} priv='*.*:ALL' host='%' state=present
     
 - name: Enable the firewall port for MySQL
-  firewalld:
-    port: 3306/tcp
-    permanent: true
-    state: enabled
-    immediate: yes
+  firewalld: port={{ mysql_port }}/tcp permanent=true state=enabled immediate=yes
