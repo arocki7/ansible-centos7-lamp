@@ -1,0 +1,65 @@
+---
+# This playbook is to perform MySQL installations.
+
+- name: Install MySQL Software Repo
+  yum:
+    name: http://repo.mysql.com/mysql57-community-release-el7-10.noarch.rpm
+    state: present
+
+- name: Install MySQL Database
+  yum: name=mysql-server state=present
+  
+- name: Install MySQL-python
+  yum: name=MySQL-python state=present
+
+- name: Start & Enable MySQL Server to start on boot
+  service:
+    name: mysqld
+    state: started
+    enabled: yes
+
+- shell: grep 'temporary password' /var/log/mysqld.log | awk '{print $NF}';
+  register: result
+-  set_fact:
+    mysql_root_pw: "{{ result.stdout }}"
+
+- stat: path=/root/.my.cnf
+  register: sym
+- set_fact: mysql_root_pw="MySQL@007"
+  when: sym.stat.exists == True
+
+- name: install .my.cnf with credentials
+  template: src=my.cnf.j2 dest=/root/.my.cnf
+            mode=0400
+  tags: my_cnf
+
+- name: Set the root password for MySQL Database
+  command:  mysql -u root --connect-expired-password --execute="SET PASSWORD = PASSWORD('MySQL@007');"
+    
+-  set_fact:
+    mysql_root_pw: "MySQL@007"
+
+- name: install .my.cnf with credentials
+  template: src=my.cnf.j2 dest=/root/.my.cnf
+            mode=0400
+  tags: my_cnf
+
+- name: Create the database for website
+  mysql_db:
+    name: ANSAP01
+    state: present
+
+- name: Create the Application user for the database
+  mysql_user:
+    name: webapp
+    password: Bond@007
+    priv: '*.*:ALL'
+    host: '%'
+    state: present
+    
+- name: Enable the firewall port for MySQL
+  firewalld:
+    port: 3306/tcp
+    permanent: true
+    state: enabled
+    immediate: yes
