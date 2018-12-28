@@ -1,5 +1,5 @@
 [webservers]
-ipaddress
+client1.example.com
 
 [dbservers]
-ipaddress
+client2.example.com
